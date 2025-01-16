@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import UserService from "../../Services/UserService";
 import { useNavigate } from "react-router-dom";
+import { resetPassword } from "../../endpoints/users";
 
 const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
@@ -11,7 +11,7 @@ const ResetPassword = () => {
     e.preventDefault();
 
     try {
-      const response = await UserService.resetPassword(newPassword);
+      const response = await resetPassword(newPassword);
       if (response === "Password has been reset successfully") {
         setMessage("Password has been reset successfully!");
         setTimeout(() => navigate("/auth/login"), 3000);

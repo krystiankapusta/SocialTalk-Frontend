@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import UserService from "../../Services/UserService";
+import { resetPasswordRequest } from "../../endpoints/users";
 
 const ResetPasswordRequest = () => {
   const [email, setEmail] = useState("");
@@ -8,7 +8,7 @@ const ResetPasswordRequest = () => {
   const handleRequestResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await UserService.resetPasswordRequest(email);
+      const response = await resetPasswordRequest(email);
       if (response === "Reset password link sent to your email") {
         setMessage("Password reset link sent! Please check your email.");
       }

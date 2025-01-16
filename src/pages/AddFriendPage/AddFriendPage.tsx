@@ -1,4 +1,4 @@
-import FriendList from "../Components/AddFriend/AddFriend";
+import FriendList from "../../Components/AddFriend/AddFriend";
 
 const AddFriendPage = () => {
   return <FriendList />;

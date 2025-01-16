@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import FriendService from "../../Services/FriendService";
 import { authApi } from "../../../../Friends-Ui/src/Api/AxiosConfig";
 import { getUserIdFromToken } from "../../Services/DecodeToken";
@@ -8,12 +8,28 @@ interface User {
   username: string;
 }
 
+interface PendingRequest {
+  id: string;
+  userId: number;
+  friendId: number;
+  status: "pending" | "accepted" | "rejected";
+}
+
 const FriendList: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [friends, setFriends] = useState<User[]>([]);
-  const [pendingRequests, setPendingRequests] = useState<User[]>([]);
+  const [friends, setFriends] = useState<PendingRequest[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
   const [error, setError] = useState<string | null>(null);
   const userId = getUserIdFromToken();
+
+  console.log(pendingRequests);
+
+  console.log(users);
+
+  const getUsernameByID = (userId: number) => {
+    const findUser = users.filter((user) => user.id === userId);
+    return findUser[0].username;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -79,12 +95,15 @@ const FriendList: React.FC = () => {
         setError("userId is missing in local storage");
         return;
       }
+
       await FriendService.acceptFriendRequest(userId, friendId);
       alert("Invitation accepted!");
       setPendingRequests(
-        pendingRequests.filter((user) => user.id !== friendId),
+        pendingRequests.filter((request) => request.friendId !== friendId),
       );
-      const acceptedUser = pendingRequests.find((user) => user.id === friendId);
+      const acceptedUser = pendingRequests.find(
+        (request) => request.friendId === friendId,
+      );
       if (acceptedUser) {
         setFriends([...friends, acceptedUser]);
       }
@@ -102,7 +121,7 @@ const FriendList: React.FC = () => {
       await FriendService.rejectFriendRequest(userId, userIdToAdd);
       alert("Invitation reject!");
       setPendingRequests(
-        pendingRequests.filter((user) => user.id !== userIdToAdd),
+        pendingRequests.filter((request) => request.friendId !== userIdToAdd),
       );
     } catch (err) {
       setError("Error during rejecting invitation");
@@ -118,7 +137,7 @@ const FriendList: React.FC = () => {
       }
       await FriendService.removeFriend(loggedUserId, friendId);
       alert("Friend remove!");
-      setFriends(friends.filter((user) => user.id !== friendId));
+      setFriends(friends.filter((request) => request.friendId !== friendId));
     } catch (err) {
       setError("Error during removing friend");
     }
@@ -138,6 +157,7 @@ const FriendList: React.FC = () => {
       user.id !== currentUserId,
   );
 
+  // @ts-ignore
   return (
     <div>
       <div>
@@ -169,13 +189,20 @@ const FriendList: React.FC = () => {
       <div>
         <h2>Pending invitations</h2>
         <ul>
-          {pendingRequests.map((user) => (
-            <li key={user.id}>
-              {user.username}
-              <button onClick={() => handleAcceptRequest(user.id)}>
+          {pendingRequests.map((request) => (
+            <li key={request.id}>
+              <p>
+                <strong>Invitation from: </strong>{" "}
+                {getUsernameByID(request.userId)}
+              </p>
+              <p>
+                <strong>Invitation to: </strong>{" "}
+                {getUsernameByID(request.friendId)}
+              </p>
+              <button onClick={() => handleAcceptRequest(request.friendId)}>
                 Accept
               </button>
-              <button onClick={() => handleRejectRequest(user.id)}>
+              <button onClick={() => handleRejectRequest(request.friendId)}>
                 Reject
               </button>
             </li>

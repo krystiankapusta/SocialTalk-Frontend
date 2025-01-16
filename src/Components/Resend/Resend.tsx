@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import UserService from "../../Services/UserService";
+import { resendVerificationCode } from "../../endpoints/users";
 
 const VerificationForm = () => {
   const [email, setEmail] = useState("");
@@ -11,7 +11,7 @@ const VerificationForm = () => {
     e.preventDefault();
     setMessage("");
     try {
-      const response = await UserService.resendVerificationCode(email);
+      const response = await resendVerificationCode(email);
 
       if (response === "Verification code sent") {
         setMessage("The verification code has been sent to your email.");

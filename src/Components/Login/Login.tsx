@@ -1,18 +1,23 @@
 import React, { useState } from "react";
-import UserService from "../../Services/UserService";
+import { useNavigate } from "react-router-dom";
+import { login } from "../../endpoints/users";
+import { useAuth } from "../../context/AuthContext";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
+  const { checkAuthStatus } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const result = await UserService.login(email, password);
-      setMessage("Logowanie zakończone sukcesem!");
+      const result = await login(email, password);
       localStorage.setItem("token", result.token);
-      window.postMessage({ type: "TOKEN", token: result.token }, "*");
+      checkAuthStatus();
+      setMessage("Successful login!");
+      navigate("/");
     } catch (error) {
       setMessage("Incorrect password or email.");
     }
@@ -41,7 +46,7 @@ const LoginForm = () => {
             required
           />
         </div>
-        <button type="submit">Zaloguj się</button>
+        <button type="submit">Log in</button>
       </form>
       {message && <p>{message}</p>}
     </div>

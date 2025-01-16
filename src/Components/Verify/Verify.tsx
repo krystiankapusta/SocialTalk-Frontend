@@ -1,20 +1,22 @@
 import React, { useState } from "react";
-import UserService from "../../Services/UserService";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { verifyEmail } from "../../endpoints/users";
 
 const VerificationForm = () => {
   const [email, setEmail] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleVerification = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await UserService.verifyEmail(email, verificationCode);
+      const response = await verifyEmail(email, verificationCode);
       console.log("Verification Response:", response);
       if (response === "Account verified successfully") {
         setMessage("E-mail verified successfully!");
       }
+      navigate("/auth/login");
     } catch (error) {
       setMessage("Verification failed. Try again!");
     }
