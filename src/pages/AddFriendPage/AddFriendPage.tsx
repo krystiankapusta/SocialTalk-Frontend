@@ -1,7 +1,11 @@
 import FriendList from "../../Components/AddFriend/AddFriend";
 
 const AddFriendPage = () => {
-  return <FriendList />;
+  return (
+    <div className="friends-page">
+      <FriendList />
+    </div>
+  );
 };
 
 export default AddFriendPage;

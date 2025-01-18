@@ -1,11 +1,21 @@
 import React, { useEffect, useState } from "react";
-import FriendService from "../../Services/FriendService";
 import { authApi } from "../../../../Friends-Ui/src/Api/AxiosConfig";
 import { getUserIdFromToken } from "../../Services/DecodeToken";
+import {
+  acceptFriendRequest,
+  getAcceptedFriends,
+  getPendingRequests,
+  rejectFriendRequest,
+  removeFriend,
+  sendFriendRequest,
+} from "../../endpoints/friends";
+import "./styles.css";
+import Button from "../Button/Button";
 
 interface User {
   id: number;
   username: string;
+  isFriend?: boolean;
 }
 
 interface PendingRequest {
@@ -21,14 +31,15 @@ const FriendList: React.FC = () => {
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
   const [error, setError] = useState<string | null>(null);
   const userId = getUserIdFromToken();
-
-  console.log(pendingRequests);
-
-  console.log(users);
+  const currentUserId = Number(userId);
 
   const getUsernameByID = (userId: number) => {
-    const findUser = users.filter((user) => user.id === userId);
-    return findUser[0].username;
+    const user = users.find((user) => user.id === userId);
+    return user?.username || "Unknown User";
+  };
+
+  const getUserInitials = (username: string) => {
+    return username.slice(0, 2).toUpperCase();
   };
 
   useEffect(() => {
@@ -39,175 +50,189 @@ const FriendList: React.FC = () => {
           return;
         }
 
-        const usersResponse = await authApi.get("/users/all");
+        const [usersResponse, pending, accepted] = await Promise.all([
+          authApi.get("/users/all"),
+          getPendingRequests(),
+          getAcceptedFriends(),
+        ]);
 
         const users = Array.isArray(usersResponse.data)
           ? usersResponse.data
           : Array.isArray(usersResponse.data.users)
             ? usersResponse.data.users
-            : null;
-
-        if (!users) {
-          throw new Error(
-            "Unexpected API response structure: " +
-              JSON.stringify(usersResponse.data),
-          );
-        }
+            : [];
 
         setUsers(users);
-
-        const pending = await FriendService.getPendingRequests();
-        console.log("Pending requests:", pending);
         setPendingRequests(pending);
-
-        const accepted = await FriendService.getAcceptedFriends();
-        console.log("Accepted friends:", accepted);
         setFriends(accepted);
       } catch (err: any) {
-        console.error(err);
         setError(
-          "Error during fetched data: " +
-            (err.response ? JSON.stringify(err.response.data) : err.message),
+          "Error fetching data: " +
+            (err.response ? err.response.data.message : err.message),
         );
       }
     };
 
     fetchData();
-  }, []);
+  }, [userId]);
 
   const handleAddFriend = async (friendId: number) => {
     try {
-      if (!userId) {
-        setError("userId is missing in local storage");
-        return;
-      }
-
-      await FriendService.sendFriendRequest(userId, friendId);
-      alert("Invitation has been sent successfully!");
+      if (!userId) throw new Error("User ID is missing");
+      await sendFriendRequest(userId, friendId);
+      setPendingRequests([
+        ...pendingRequests,
+        {
+          id: Date.now().toString(),
+          userId: currentUserId,
+          friendId,
+          status: "pending",
+        },
+      ]);
     } catch (err) {
-      setError("Error when sending invitation");
+      setError("Failed to send friend request");
     }
   };
 
   const handleAcceptRequest = async (friendId: number) => {
     try {
-      if (!userId) {
-        setError("userId is missing in local storage");
-        return;
-      }
+      if (!userId) throw new Error("User ID is missing");
+      await acceptFriendRequest(userId, friendId);
 
-      await FriendService.acceptFriendRequest(userId, friendId);
-      alert("Invitation accepted!");
+      const acceptedRequest = pendingRequests.find(
+        (request) => request.friendId === friendId,
+      );
+
       setPendingRequests(
         pendingRequests.filter((request) => request.friendId !== friendId),
       );
-      const acceptedUser = pendingRequests.find(
-        (request) => request.friendId === friendId,
-      );
-      if (acceptedUser) {
-        setFriends([...friends, acceptedUser]);
+
+      if (acceptedRequest) {
+        setFriends([...friends, acceptedRequest]);
       }
     } catch (err) {
-      setError("Error during accepting invitation");
+      setError("Failed to accept friend request");
     }
   };
 
-  const handleRejectRequest = async (userIdToAdd: number) => {
+  const handleRejectRequest = async (friendId: number) => {
     try {
-      if (!userId) {
-        setError("userId is missing in local storage");
-        return;
-      }
-      await FriendService.rejectFriendRequest(userId, userIdToAdd);
-      alert("Invitation reject!");
+      if (!userId) throw new Error("User ID is missing");
+      await rejectFriendRequest(userId, friendId);
       setPendingRequests(
-        pendingRequests.filter((request) => request.friendId !== userIdToAdd),
+        pendingRequests.filter((request) => request.friendId !== friendId),
       );
     } catch (err) {
-      setError("Error during rejecting invitation");
+      setError("Failed to reject friend request");
     }
   };
 
   const handleRemoveFriend = async (friendId: number) => {
     try {
-      const loggedUserId = localStorage.getItem("userId");
-      if (!loggedUserId) {
-        setError("userId is missing in local storage");
-        return;
-      }
-      await FriendService.removeFriend(loggedUserId, friendId);
-      alert("Friend remove!");
-      setFriends(friends.filter((request) => request.friendId !== friendId));
+      if (!userId) throw new Error("User ID is missing");
+      await removeFriend(userId, friendId);
+      setFriends(friends.filter((friend) => friend.friendId !== friendId));
     } catch (err) {
-      setError("Error during removing friend");
+      setError("Failed to remove friend");
     }
   };
 
-  const getUserStatus = (userId: number) => {
-    if (friends.some((friend) => friend.id === userId)) return "friend";
-    if (pendingRequests.some((request) => request.id === userId))
-      return "pending";
-    return "add";
-  };
-  const currentUserId = Number(getUserIdFromToken());
-
   const usersToDisplay = users.filter(
     (user) =>
-      !friends.some((friend) => friend.id === user.id) &&
-      user.id !== currentUserId,
+      !friends.some((friend) => friend.friendId === user.id) &&
+      user.id !== currentUserId &&
+      !pendingRequests.some(
+        (request) =>
+          request.userId === currentUserId && request.friendId === user.id,
+      ),
   );
 
-  // @ts-ignore
   return (
-    <div>
-      <div>
+    <div className="friend-list-container">
+      <div className="friend-list-header">
         <h1>Friends</h1>
         <p>Add friends or accept invitations!</p>
       </div>
-      {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <div>
-        <h2>All users</h2>
-        <ul>
-          {usersToDisplay.map((user) => (
-            <li key={user.id}>
-              {user.username}
-              {getUserStatus(user.id) === "add" && (
-                <button onClick={() => handleAddFriend(user.id)}>Add</button>
-              )}
-              {getUserStatus(user.id) === "friend" && (
-                <button onClick={() => handleRemoveFriend(user.id)}>
-                  Delete
+      {error && <div className="error-message">{error}</div>}
+
+      <div className="columns-container">
+        <div className="column">
+          <h2>My Friends ({friends.length})</h2>
+          <ul className="user-list">
+            {friends.map((friend) => (
+              <li key={friend.id} className="user-item">
+                <div className="user-info">
+                  <div className="user-avatar">
+                    {getUserInitials(getUsernameByID(friend.friendId))}
+                  </div>
+                  <span className="user-name">
+                    {getUsernameByID(friend.friendId)}
+                  </span>
+                </div>
+                <button
+                  className="btn btn-remove"
+                  onClick={() => handleRemoveFriend(friend.friendId)}
+                >
+                  Remove
                 </button>
-              )}
-              {getUserStatus(user.id) === "pending" && <span>Pending</span>}
-            </li>
-          ))}
-        </ul>
-      </div>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-      <div>
-        <h2>Pending invitations</h2>
-        <ul>
-          {pendingRequests.map((request) => (
-            <li key={request.id}>
-              <p>
-                <strong>Invitation from: </strong>{" "}
-                {getUsernameByID(request.userId)}
-              </p>
-              <p>
-                <strong>Invitation to: </strong>{" "}
-                {getUsernameByID(request.friendId)}
-              </p>
-              <button onClick={() => handleAcceptRequest(request.friendId)}>
-                Accept
-              </button>
-              <button onClick={() => handleRejectRequest(request.friendId)}>
-                Reject
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div className="column">
+          <h2>All Users ({usersToDisplay.length})</h2>
+          <ul className="user-list">
+            {usersToDisplay.map((user) => (
+              <li key={user.id} className="user-item">
+                <div className="user-info">
+                  <div className="user-avatar">
+                    {getUserInitials(user.username)}
+                  </div>
+                  <span className="user-name">{user.username}</span>
+                </div>
+                <Button
+                  variant="primary"
+                  onClick={() => handleAddFriend(user.id)}
+                  label="Add Friend"
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="column">
+          <h2>Pending Requests ({pendingRequests.length})</h2>
+          <ul className="user-list">
+            {pendingRequests.map((request) => (
+              <li key={request.id} className="user-item">
+                <div className="user-info">
+                  <div className="user-avatar">
+                    {getUserInitials(getUsernameByID(request.userId))}
+                  </div>
+                  <span className="user-name">
+                    {getUsernameByID(request.userId)}
+                  </span>
+                </div>
+                <div className="btn-group">
+                  <button
+                    className="btn btn-accept"
+                    onClick={() => handleAcceptRequest(request.friendId)}
+                  >
+                    Accept
+                  </button>
+                  <button
+                    className="btn btn-reject"
+                    onClick={() => handleRejectRequest(request.friendId)}
+                  >
+                    Reject
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );

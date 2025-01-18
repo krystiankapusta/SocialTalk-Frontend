@@ -1,0 +1,150 @@
+.friend-list-container {
+    padding: 20px;
+}
+
+.friend-list-header {
+    margin-bottom: 24px;
+}
+
+.friend-list-header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+}
+
+.friend-list-header p {
+    color: #6b7280;
+}
+
+.columns-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+    margin-top: 20px;
+}
+
+.column {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.column h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #111827;
+}
+
+.user-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    background-color: #f9fafb;
+}
+
+.user-item:last-child {
+    margin-bottom: 0;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.user-name {
+    font-weight: 500;
+    color: #111827;
+}
+
+.btn-group {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+
+.btn-add {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.btn-add:hover {
+    background-color: #2563eb;
+}
+
+.btn-remove {
+    background-color: #ef4444;
+    color: white;
+}
+
+.btn-remove:hover {
+    background-color: #dc2626;
+}
+
+.btn-accept {
+    background-color: #10b981;
+    color: white;
+}
+
+.btn-accept:hover {
+    background-color: #059669;
+}
+
+.btn-reject {
+    background-color: #6b7280;
+    color: white;
+}
+
+.btn-reject:hover {
+    background-color: #4b5563;
+}
+
+.pending-badge {
+    padding: 4px 8px;
+    background-color: #f3f4f6;
+    color: #6b7280;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.error-message {
+    color: #ef4444;
+    padding: 12px;
+    border-radius: 6px;
+    background-color: #fee2e2;
+    margin-bottom: 16px;
+}

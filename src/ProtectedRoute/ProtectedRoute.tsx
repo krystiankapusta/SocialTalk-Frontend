@@ -17,12 +17,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const [isInitialCheck, setIsInitialCheck] = useState(true);
 
   useEffect(() => {
-    console.log("Route check:", {
-      isLoggedIn,
-      authenticationPage,
-      isInitialCheck,
-    });
-
     if (isInitialCheck) {
       setIsInitialCheck(false);
       return;

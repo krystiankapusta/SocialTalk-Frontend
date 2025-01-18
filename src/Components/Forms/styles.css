@@ -1,0 +1,85 @@
+.form-container {
+    width: 70vh;
+    max-height: 70vh;
+    padding: 40px;
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.form-title {
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 40px;
+    color: #000;
+}
+
+.error-message {
+    margin-top: 16px;
+    text-align: center;
+    color: #dc2626;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px;
+    background-color: #fef2f2;
+    border-radius: 6px;
+    border: 1px solid #fee2e2;
+}
+
+.success-message {
+    margin-top: 16px;
+    text-align: center;
+    color: #059669;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px;
+    background-color: #f0fdf4;
+    border-radius: 6px;
+    border: 1px solid #dcfce7;
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.info-message {
+    margin-top: 16px;
+    text-align: center;
+    color: #3b82f6;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px;
+    background-color: #eff6ff;
+    border-radius: 6px;
+    border: 1px solid #dbeafe;
+}
+
+.form-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.forgot-password-link {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color 0.2s;
+}
+
+.forgot-password-link:hover:not(:disabled) {
+    color: #2563eb;
+    text-decoration: underline;
+}
+
+.forgot-password-link:disabled {
+    color: #9ca3af;
+    cursor: not-allowed;
+}

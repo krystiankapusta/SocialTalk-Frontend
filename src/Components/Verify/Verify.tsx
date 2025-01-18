@@ -12,7 +12,6 @@ const VerificationForm = () => {
     e.preventDefault();
     try {
       const response = await verifyEmail(email, verificationCode);
-      console.log("Verification Response:", response);
       if (response === "Account verified successfully") {
         setMessage("E-mail verified successfully!");
       }

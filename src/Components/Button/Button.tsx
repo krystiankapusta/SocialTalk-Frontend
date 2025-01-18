@@ -1,20 +1,35 @@
+import React from "react";
+import Spinner from "../Spinner/Spinner";
 import "./styles.css";
 
-type ButtonProps = {
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
   variant: "primary" | "secondary" | "disabled" | "tertiary";
-  onClick?: () => void;
-  disabled?: boolean;
-};
+  loading?: boolean;
+}
 
-const Button = ({ label, variant, onClick, disabled }: ButtonProps) => {
+const Button: React.FC<ButtonProps> = ({
+  label,
+  variant,
+  loading = false,
+  disabled,
+  className = "",
+  ...rest
+}) => {
   return (
     <button
-      className={`btn btn-${variant}`}
-      onClick={onClick}
-      disabled={disabled || variant === "disabled"}
+      className={`btn btn-${variant} ${className}`}
+      disabled={disabled || loading || variant === "disabled"}
+      {...rest}
     >
-      {label}
+      {loading ? (
+        <>
+          <Spinner size="small" color="currentColor" />
+          <span>Please wait...</span>
+        </>
+      ) : (
+        label
+      )}
     </button>
   );
 };

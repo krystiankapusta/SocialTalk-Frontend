@@ -21,3 +21,9 @@
     text-decoration: none;
     color: inherit;
 }
+
+.user-info {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+}

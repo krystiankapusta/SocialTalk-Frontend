@@ -48,6 +48,11 @@ const Header = () => {
               <div className="user-info">Loading...</div>
             )}
             <Button
+              variant="secondary"
+              label="Friends"
+              onClick={() => handleNavigation("/friends")}
+            />
+            <Button
               variant="primary"
               label="Profile"
               onClick={() => handleNavigation("/profile")}

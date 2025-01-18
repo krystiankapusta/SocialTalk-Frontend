@@ -4,17 +4,19 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
-  const { isLoggedIn } = useAuth();
+  const { user, isLoggedIn } = useAuth();
   const navigate = useNavigate();
-  console.log("isUserLoggedIn", isLoggedIn);
+
   const handleNavigation = (path: string) => {
     navigate(path);
   };
 
+  const HomePageTitle = `Welcome ${user?.username} to Social Talk`;
+
   return (
     <div className="home-page">
       <div className="home-header">
-        <h1>Welcome to Social Talk</h1>
+        <h1>{HomePageTitle}</h1>
         <p>Connect, share, and engage with your community like never before.</p>
       </div>
       <div className="home-main">
