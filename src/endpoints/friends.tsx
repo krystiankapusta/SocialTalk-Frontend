@@ -1,5 +1,5 @@
-import { friendsApi } from "../../../Friends-Ui/src/Api/AxiosConfig";
 import { getUserIdFromToken } from "../Services/DecodeToken";
+import { friendsApi } from "../Api/AxiosConfig";
 
 const getAuthHeader = () => {
   const token = localStorage.getItem("token");
@@ -38,6 +38,7 @@ export const sendFriendRequest = async (
   loggedUserId: string,
   friendId: number,
 ) => {
+  console.log("Logged user id = ", loggedUserId);
   if (!loggedUserId) throw new Error("loggedUserId is missing");
   if (!friendId) throw new Error("friendId is missing");
 
@@ -61,13 +62,13 @@ export const acceptFriendRequest = async (
   if (!friendId) throw new Error("friendId is missing");
 
   await friendsApi.post(
-    `/accept/${friendId}`,
+    `/accept/${loggedUserId}`,
     {},
     {
       headers: {
         Authorization: getAuthHeader(),
       },
-      params: { userId: loggedUserId },
+      params: { userId: friendId },
     },
   );
 };
@@ -80,18 +81,18 @@ export const rejectFriendRequest = async (
   if (!friendId) throw new Error("friendId is missing");
 
   await friendsApi.post(
-    `/reject/${friendId}`,
+    `/reject/${loggedUserId}`,
     {},
     {
       headers: {
         Authorization: getAuthHeader(),
       },
-      params: { userId: loggedUserId },
+      params: { userId: friendId },
     },
   );
 };
 
-export const removeFriend = async (loggedUserId: string, friendId: number) => {
+export const removeFriend = async (loggedUserId: number, friendId: number) => {
   if (!loggedUserId) throw new Error("loggedUserId is missing");
 
   await friendsApi.delete(`/remove/${friendId}`, {

@@ -2,13 +2,15 @@ import React, { useEffect, useRef, useState } from "react";
 import { getUserIdFromToken } from "../../Services/DecodeToken";
 import "./styles.css";
 import { authApi } from "../../Api/AxiosConfig";
+import { getAcceptedFriends } from "../../endpoints/friends";
+import { getConversation, sendMessage } from "../../endpoints/chats";
 
 interface Message {
   id: number;
-  sender_id: number;
-  receiver_id: number;
+  senderId: number;
+  receiverId: number;
   content: string;
-  sent_message_at: string;
+  sentMessageAt: string;
 }
 
 interface User {
@@ -16,26 +18,29 @@ interface User {
   username: string;
 }
 
+interface PendingRequest {
+  id: string;
+  userId: number;
+  friendId: number;
+  status: "pending" | "accepted" | "rejected";
+}
+
 const ChatPage = () => {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [users, setUsers] = useState<User[]>([]);
+  const [friends, setFriends] = useState<PendingRequest[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
   const currentUserId = Number(getUserIdFromToken());
 
-  // Fetch users
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        //const response = await getAcceptedFriends();
-        const response = await authApi.get("/users/all");
-
-        console.log(response);
-        const data = await response.data;
-        const filteredUsers = data.filter(
-          (user: User) => user.id !== currentUserId,
-        );
+        const response = await authApi.get("/users/all", {
+          params: { excludeCurrentUserId: currentUserId },
+        });
+        const filteredUsers = response.data;
         setUsers(filteredUsers);
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -45,15 +50,12 @@ const ChatPage = () => {
     fetchUsers();
   }, [currentUserId]);
 
-  // Fetch messages when user is selected
   useEffect(() => {
     if (!selectedUserId) return;
 
     const fetchMessages = async () => {
       try {
-        // Modify this endpoint according to your API
-        const response = await fetch(`/api/messages/${selectedUserId}`);
-        const data = await response.json();
+        const data = await getConversation(selectedUserId);
         setMessages(data);
       } catch (error) {
         console.error("Error fetching messages:", error);
@@ -63,7 +65,19 @@ const ChatPage = () => {
     fetchMessages();
   }, [selectedUserId]);
 
-  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    const fetchAcceptedFriends = async () => {
+      try {
+        const accepted = await getAcceptedFriends();
+        setFriends(accepted);
+      } catch (err) {
+        console.error("Error fetching friends: ", err);
+      }
+    };
+
+    fetchAcceptedFriends();
+  }, [currentUserId]);
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -73,62 +87,78 @@ const ChatPage = () => {
     if (!newMessage.trim() || !selectedUserId) return;
 
     try {
-      const response = await fetch("/api/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          receiver_id: selectedUserId,
-          content: newMessage,
-        }),
-      });
+      await sendMessage(selectedUserId, newMessage);
 
-      if (response.ok) {
-        const sentMessage = await response.json();
-        setMessages((prev) => [...prev, sentMessage]);
-        setNewMessage("");
-      }
+      const sentMessage: Message = {
+        id: Date.now(),
+        senderId: currentUserId,
+        receiverId: selectedUserId,
+        content: newMessage,
+        sentMessageAt: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, sentMessage]);
+      setNewMessage("");
     } catch (error) {
       console.error("Error sending message:", error);
     }
   };
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const date = new Date(dateString);
+    return isNaN(date.getTime())
+      ? ""
+      : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  const getUserInitials = (username: string) => {
-    return username.slice(0, 2).toUpperCase();
+  const getUsernameByID = (userId: number) => {
+    const user = users.find((user) => user.id === userId);
+    return user?.username || "Unknown User";
   };
 
-  const getSelectedUser = () => {
-    return users.find((user) => user.id === selectedUserId);
-  };
+  const getUserInitials = (username: string) =>
+    username.slice(0, 2).toUpperCase();
+
+  const getSelectedUser = () =>
+    users.find((user) => user.id === selectedUserId);
 
   return (
     <div className="chat-layout">
       {/* Sidebar */}
       <div className="chat-sidebar">
+        <div className="header-chat-list">
+          <h2>Friends</h2>
+        </div>
         <ul className="chat-list">
-          {users.map((user) => (
-            <li
-              key={user.id}
-              className={`chat-list-item ${selectedUserId === user.id ? "active" : ""}`}
-              onClick={() => setSelectedUserId(702)}
-            >
-              <div className="chat-list-avatar">
-                {getUserInitials(user.username)}
-              </div>
-              <div className="chat-list-info">
-                <div className="chat-list-name">{user.username}</div>
-                <div className="chat-list-id">ID: {user.id}</div>
-              </div>
-            </li>
-          ))}
+          {friends.length > 0 ? (
+            friends.map((friend) => {
+              const friendUserId =
+                friend.userId === currentUserId
+                  ? friend.friendId
+                  : friend.userId;
+
+              return (
+                <li
+                  key={friend.id}
+                  className={`chat-list-item ${
+                    selectedUserId === friendUserId ? "active" : ""
+                  }`}
+                  onClick={() => setSelectedUserId(friendUserId)}
+                >
+                  <div className="chat-list-avatar">
+                    {getUserInitials(getUsernameByID(friendUserId))}
+                  </div>
+                  <div className="chat-list-info">
+                    <div className="chat-list-name">
+                      {getUsernameByID(friendUserId)}
+                    </div>
+                    <div className="chat-list-id">ID: {friendUserId}</div>
+                  </div>
+                </li>
+              );
+            })
+          ) : (
+            <div className="no-friends">No friends available</div>
+          )}
         </ul>
       </div>
 
@@ -147,26 +177,28 @@ const ChatPage = () => {
                 <div className="chat-header-id">ID: {selectedUserId}</div>
               </div>
             </div>
-
             <div className="messages-container">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`message ${
-                    message.sender_id === currentUserId ? "sent" : "received"
-                  }`}
-                >
-                  <div className="message-content">
-                    {message.content}
-                    <span className="message-time">
-                      {formatTime(message.sent_message_at)}
-                    </span>
+              {messages.length > 0 ? (
+                messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`message ${
+                      message.senderId === currentUserId ? "sent" : "received"
+                    }`}
+                  >
+                    <div className="message-content">
+                      {message.content}
+                      <span className="message-time">
+                        {formatTime(message.sentMessageAt)}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <div className="no-messages">No messages yet</div>
+              )}
               <div ref={chatEndRef} />
             </div>
-
             <form onSubmit={handleSendMessage} className="message-input-form">
               <input
                 type="text"
@@ -182,11 +214,7 @@ const ChatPage = () => {
           </div>
         ) : (
           <div className="chat-container">
-            <div className="messages-container">
-              <div style={{ textAlign: "center", color: "#6b7280" }}>
-                Select a user to start messaging
-              </div>
-            </div>
+            <div className="no-user">Select a user to start messaging</div>
           </div>
         )}
       </div>

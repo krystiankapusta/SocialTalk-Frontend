@@ -14,4 +14,11 @@ const friendsApi = axios.create({
   },
 });
 
-export { authApi, friendsApi };
+const chatApi = axios.create({
+  baseURL: `http://localhost:8093/chat`,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+export { authApi, friendsApi, chatApi };

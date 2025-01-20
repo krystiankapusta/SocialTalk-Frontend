@@ -162,7 +162,11 @@
     cursor: not-allowed;
 }
 
-/* Sidebar styles */
+.header-chat-list {
+    justify-content: flex-end;
+    font-size: 25px;
+}
+
 .chat-list {
     list-style: none;
     padding: 0;

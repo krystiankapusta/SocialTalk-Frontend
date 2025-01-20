@@ -33,7 +33,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }, [isLoggedIn, navigate, location, authenticationPage, isInitialCheck]);
 
-  // Show nothing during initial check
   if (isInitialCheck) {
     return null;
   }
