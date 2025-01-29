@@ -1,50 +1,76 @@
-# React + TypeScript + Vite
+# Social Talk frontend documentation
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Introduction
 
-Currently, two official plugins are available:
+Documentation provides a detailed overview of the fronted interface for the application. It has been written by using
+technologies:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+* React - core library for building the user interface
+* TypeScript - for adding static typing and improving code quality
+* Vite - fast build tool and development server for modern frontend projects
+* React Router DOM - for routing and navigation within the application
+* Axios - for handling HTTP requests to interact with APIs
+* React Hook Form - for managing forms and form validation
+* STOMP.js and SockJS Client - for WebSocket communication, often used in real-time features
+* JS-Cookie - for managing cookies, such as storing authentication tokens
+* JWT-Decode - for decoding and managing JSON Web Tokens (JWT)
+* ESLint - for linting and ensuring code quality
+* Prettier - for consistent code formatting
+* @vitejs/plugin-react - enhances Vite's support for React projects
 
-## Expanding the ESLint configuration
+### Home page for unregistered/logged-out users
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+The default home page displayed for users who are not logged in, showcasing general app features:
 
-- Configure the top-level `parserOptions` property like this:
+![](images/home_page_logout.png)
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-});
-```
+### Registration panel
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+The registration panel allows new users to create an account by entering username, email address and password:
 
-```js
-// eslint.config.js
-import react from "eslint-plugin-react";
+![](images/register.png)
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: "18.3" } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs["jsx-runtime"].rules,
-  },
-});
-```
+### Login panel
+
+The login panel enables existing users to sign in with their registered credentials:
+
+![](images/login.png)
+
+### Home page for logged in user
+
+The default home page displayed for users who are logged in, showcasing all app features:
+
+![](images/home_page_loggedIn.png)
+
+### User profile
+
+The user profile displays account details:
+
+![](images/profile.png)
+
+## Friends manager:
+
+### No friends
+
+This view indicates that the user has not added any friends yet and may include an option to add friends:
+![](images/no_friends.png)
+
+### With friends
+
+This section shows that the user has added friends and may include an option to add other friends:
+![](images/friends.png)
+
+# Chat:
+
+### View of the person who wrote the first message
+
+This is the initial chat view for a conversation in which no messages have been exchanged yet:
+
+![](images/no_message.png)
+
+### View from the conversation between friends:
+
+This view shows a chat with the user's friend, displaying their messages and the chat interface:
+![](images/chat2.png)
+
+![](images/chat1.png)
