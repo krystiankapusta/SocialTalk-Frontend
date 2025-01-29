@@ -18,6 +18,22 @@ technologies:
 * Prettier - for consistent code formatting
 * @vitejs/plugin-react - enhances Vite's support for React projects
 
+## How it works?
+
+To run this project, ensure that the following services are correctly configured and running: Eureka-Service,
+Gateway-Service, Auth-Service,
+Friends-Service and Chat-Service. Next, install all necessary dependencies by running the following command:
+
+```shell
+npm install
+```
+
+Finally, start the project with:
+
+```shell
+npm run dev
+```
+
 ### Home page for unregistered/logged-out users
 
 The default home page displayed for users who are not logged in, showcasing general app features:
